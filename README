@@ -1,0 +1,22 @@
+LICENSE
+See 'gpl-3.0.txt' in this folder.
+
+WARNING
+This plugin is at pre-alpha stage. Don't expect anything to work. Do expect crashes.
+DON'T ACTIVATE THIS PLUGIN WHEN WORKING WITH IMPORTANT FILES!!!
+
+INSTALLATION (see WARNING above!)
+Copy 'ropeplugin' folder and 'ropeplugin.gedit-plugin' file to your gedit plugins folder (for example - '/home/<username>/.gnome2/gedit/plugins/').
+
+WHAT (sort of) WORKS:
+Create a rope project
+File -> Rope -> Set Project Root...
+Sets up a root folder of the rope project and creates a project.
+
+Configure rope project
+File -> Rope -> Configure Project
+Opens 'config.py' of the current rope project in a gedit tab. If project isn't set up, opens a 'Set project root' dialog.
+
+TODO:
+Everything: Refactoring, code completion, etc...
+
