@@ -1,0 +1,2 @@
+from ropeplugin import RopePlugin
+

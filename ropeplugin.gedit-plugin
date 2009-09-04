@@ -1,0 +1,10 @@
+[Gedit Plugin]
+Loader=python
+Module=ropeplugin
+IAge=2
+Name=Rope Plugin
+Description=Gedit plugin for integration with rope library.
+Authors=nbchtu <nbchtu@gmail.com>
+Copyright=(c)2009 nbchtu <nbchtu@gmail.com>
+Website=http://code.google.com/p/gedit-rope/
+

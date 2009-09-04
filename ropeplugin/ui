@@ -1,0 +1,20 @@
+<ui>
+    <menubar name="MenuBar">
+        <menu name="FileMenu" action="File">
+            <placeholder name="FileOps_2">
+                <menu action="FileRope">
+                    <menuitem action="SetProject" />
+                    <menuitem action="ConfigProject" />
+                </menu>
+            </placeholder>
+        </menu>
+        <menu name="EditMenu" action="Edit">
+            <placeholder name="EditOps_8">
+                <menu action="EditRope">
+                    <menuitem action="Rename" />
+                </menu>
+            </placeholder>
+        </menu>
+    </menubar>
+</ui>
+
