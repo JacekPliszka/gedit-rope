@@ -29,7 +29,9 @@ class RopeProjectHelper(object):
             action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
             buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                      gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-        dlg.set_uri(self.window.get_active_document().get_uri())
+        uri = self.window.get_active_document().get_uri()
+        if uri:
+            dlg.set_uri(uri)
         dlg.set_default_response(gtk.RESPONSE_OK)
         resp = dlg.run()
         if resp == gtk.RESPONSE_OK:
@@ -40,10 +42,11 @@ class RopeProjectHelper(object):
     def config_project(self, action):
         if not self.project:
             self.set_project(action)
-        uri = get_uri_from_path(os.path.join(self.project.root.real_path,
-                                               '.ropeproject', 'config.py'))
-        config_tab = self.get_or_create_tab_from_uri(uri)
-        self.window.set_active_tab(config_tab)
+        if self.project:
+            uri = get_uri_from_path(os.path.join(self.project.root.real_path,
+                                                   '.ropeproject', 'config.py'))
+            config_tab = self.get_or_create_tab_from_uri(uri)
+            self.window.set_active_tab(config_tab)
 
 
 class RopePlugin(gedit.Plugin):
