@@ -6,6 +6,21 @@ import rope.base.project
 from gettext import gettext as _
 import os.path
 
+#ui strings
+file_ui = '''<ui>
+    <menubar name="MenuBar">
+        <menu name="FileMenu" action="File">
+            <placeholder name="FileOps_2">
+                <menu action="FileRope">
+                    <menuitem action="SetProject" />
+                    <menuitem action="ConfigProject" />
+                </menu>
+            </placeholder>
+        </menu>
+    </menubar>
+</ui>'''
+
+
 #helper functions
 def get_uri_from_path(path):
     return 'file://' + path
@@ -62,32 +77,29 @@ class RopePlugin(gedit.Plugin):
     def deactivate(self, window):
         self.remove_menu()
         self.window = None
-        self.action_group = None
+        self.file_action_group = None
         self.project_helper = None
 
     def update_ui(self, window):
-        self.action_group.set_sensitive(
+        self.file_action_group.set_sensitive(
             self.window.get_active_document() != None)
 
     def insert_menu(self):
         manager = self.window.get_ui_manager()
-        self.action_group = gtk.ActionGroup('RopeActions')
-        actions = [
+        self.file_action_group = gtk.ActionGroup('RopeFileActions')
+        file_actions = [
             ('FileRope', None, _('Rope')),
             ('SetProject', None, _('Set Project Root Folder...'), None, None,
                 self.project_helper.set_project),
             ('ConfigProject', None, _('Configure Project'), None, None,
-                self.project_helper.config_project),
-            ('EditRope', None, _('Rope')),
-            ('Rename', None, _('Rename'))]
-        self.action_group.add_actions(actions)
-        manager.insert_action_group(self.action_group, -1)
-        ui_file = os.path.join(os.path.dirname(__file__), 'ui')
-        self.ui_id = manager.add_ui_from_file(ui_file)
+                self.project_helper.config_project)]
+        self.file_action_group.add_actions(file_actions)
+        manager.insert_action_group(self.file_action_group, -1)
+        self.file_ui_id = manager.add_ui_from_string(file_ui)
 
     def remove_menu(self):
         manager = self.window.get_ui_manager()
-        manager.remove_ui(self.ui_id)
-        manager.remove_action_group(self.action_group)
+        manager.remove_ui(self.file_ui_id)
+        manager.remove_action_group(self.file_action_group)
         manager.ensure_update()
 
