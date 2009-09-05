@@ -73,7 +73,6 @@ class RopePlugin(gedit.Plugin):
         gedit.Plugin.__init__(self)
 
     def activate(self, window):
-        gettext.install('ropeplugin', os.path.dirname(__file__), unicode=True)
         self.window = window
         self.project_helper = RopeProjectHelper(self.window)
         self.insert_menu()
