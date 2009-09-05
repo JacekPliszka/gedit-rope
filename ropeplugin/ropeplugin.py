@@ -6,8 +6,8 @@ import rope.base.project
 import gettext
 import os.path
 
-gettext.install('ropeplugin', os.path.abspath(os.path.dirname(__file__)),
-                unicode=True)
+LOCALES_DIR = os.path.join(os.path.dirname(__file__), '.locales')
+gettext.install('ropeplugin', LOCALES_DIR, unicode=True)
 
 #ui strings
 file_ui = '''<ui>
