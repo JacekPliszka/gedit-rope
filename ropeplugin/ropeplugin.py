@@ -3,8 +3,11 @@
 import gedit
 import gtk
 import rope.base.project
-from gettext import gettext as _
+import gettext
 import os.path
+
+gettext.install('ropeplugin', os.path.abspath(os.path.dirname(__file__)),
+                unicode=True)
 
 #ui strings
 file_ui = '''<ui>
@@ -40,7 +43,7 @@ class RopeProjectHelper(object):
 
     def set_project(self, action):
         dlg = gtk.FileChooserDialog(
-            title=_('Set Project Root Folder...'),
+            title=_(u'Set Project Root Folder...'),
             action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
             buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                      gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -70,6 +73,7 @@ class RopePlugin(gedit.Plugin):
         gedit.Plugin.__init__(self)
 
     def activate(self, window):
+        gettext.install('ropeplugin', os.path.dirname(__file__), unicode=True)
         self.window = window
         self.project_helper = RopeProjectHelper(self.window)
         self.insert_menu()
@@ -88,10 +92,10 @@ class RopePlugin(gedit.Plugin):
         manager = self.window.get_ui_manager()
         self.file_action_group = gtk.ActionGroup('RopeFileActions')
         file_actions = [
-            ('FileRope', None, _('Rope')),
-            ('SetProject', None, _('Set Project Root Folder...'), None, None,
+            ('FileRope', None, 'Rope'),
+            ('SetProject', None, _(u'Set Project Root Folder...'), None, None,
                 self.project_helper.set_project),
-            ('ConfigProject', None, _('Configure Project'), None, None,
+            ('ConfigProject', None, _(u'Configure Project'), None, None,
                 self.project_helper.config_project)]
         self.file_action_group.add_actions(file_actions)
         manager.insert_action_group(self.file_action_group, -1)
