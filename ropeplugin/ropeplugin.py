@@ -4,6 +4,7 @@ import gtk
 import rope.base.project
 import gettext
 import os.path
+import config
 
 #gettext installation
 LOCALES_DIR = os.path.join(os.path.dirname(__file__), '.locales')
@@ -17,6 +18,8 @@ rope_ui ='''   <menubar name="MenuBar">
                     <menuitem action="SetProject" />
                     <menuitem action="ConfigProject" />
                 </menu>
+                <separator />
+                <menuitem action="ConfigPlugin" />
             </placeholder>
         </menu>
     </menubar>''' # may distribute them across several menus (File, Edit, etc.)
@@ -24,8 +27,16 @@ rope_ui ='''   <menubar name="MenuBar">
 
 #helper functions
 def get_uri_from_path(path):
-    'Converts path string to uri string.'
+    'Converts absolute path string to uri string.'
     return 'file://' + path
+
+def get_or_create_tab_from_uri(window, uri):
+    '''Returns the tab from uri. If it doesn't exists, opens it.
+    If the file doesn't exist, returns nothing.'''
+    return window.get_tab_from_uri(uri) or \
+           window.create_tab_from_uri(uri=uri,
+                encoding=gedit.encoding_get_current(),
+                line_pos=0, create=False, jump_to=False)
 
 
 class RopeProjectHelper(object):
@@ -34,13 +45,6 @@ class RopeProjectHelper(object):
         self.project = None
         self.window = window
 
-    def get_or_create_tab_from_uri(self, uri):
-        '''Returns the tab from uri. If it doesn't exists, opens it.
-        If file doesn't exist, returns nothing.'''
-        return self.window.get_tab_from_uri(uri) or \
-               self.window.create_tab_from_uri(uri=uri,
-                    encoding=gedit.encoding_get_current(),
-                    line_pos=0, create=False, jump_to=False)
 
     def set_project(self, action):
         'Sets up rope project root folder and creates a rope project.'
@@ -71,7 +75,7 @@ class RopeProjectHelper(object):
         if self.project: # making sure that project was properly set up
             uri = get_uri_from_path(os.path.join(self.project.root.real_path,
                                                  '.ropeproject', 'config.py'))
-            config_tab = self.get_or_create_tab_from_uri(uri)
+            config_tab = get_or_create_tab_from_uri(self.window, uri)
             self.window.set_active_tab(config_tab)
         else:
             pass # in case project wasn't set up and user canceled initiated
@@ -95,22 +99,29 @@ class RopePlugin(gedit.Plugin):
         self.project_helper = None
 
     def update_ui(self, window):
-        pass   
-      
+        pass
+        
+    def config_plugin(self, action):
+        config_path = os.path.join(os.path.dirname(__file__), 'config.py')
+        config_uri = get_uri_from_path(config_path)
+        config_tab = get_or_create_tab_from_uri(self.window, config_uri)
+        self.window.set_active_tab(config_tab)
+        
     def insert_menu(self):
         manager = self.window.get_ui_manager()
         self.rope_action_group = gtk.ActionGroup('RopeActions')
-        rope_actions = [
-            ('Rope', None, 'Rope'),
-            
-            ('Project', None, _(u'Project')),
-            
-            ('SetProject', None, _(u'Set Project Root Folder...'), 
-                '<Control>F5', None, self.project_helper.set_project),
+        rope_actions = [('Rope', None, 'Rope'),
+            ('Project', None, _(u'Project')),          
+            ('SetProject', None, _(u'Set Project Root Folder...'),
+                config.SET_PROJECT_SHORTCUT, None,
+                self.project_helper.set_project),
+            ('ConfigProject', None, _(u'Configure Project'), 
+                config.CONFIG_PROJECT_SHORTCUT, None,
+                self.project_helper.config_project),    
 
-            ('ConfigProject', None, _(u'Configure Project'), None, 
-                None, self.project_helper.config_project),
-            ]
+            ('ConfigPlugin', None, _(u'Configure Plugin'),
+                config.CONFIG_PLUGIN_SHORTCUT, None,
+                self.config_plugin)]
 
         self.rope_action_group.add_actions(rope_actions)
         manager.insert_action_group(self.rope_action_group, -1)
