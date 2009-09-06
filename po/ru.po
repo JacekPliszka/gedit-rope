@@ -24,3 +24,6 @@ msgstr "Настройка проекта"
 msgid "Project"
 msgstr "Проект"
 
+msgid "Configure Plugin"
+msgstr "Настройка плагина"
+
