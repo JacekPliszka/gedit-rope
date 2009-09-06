@@ -19,7 +19,8 @@ rope_ui ='''   <menubar name="MenuBar">
                 </menu>
             </placeholder>
         </menu>
-    </menubar>'''
+    </menubar>''' # may distribute them across several menus (File, Edit, etc.)
+                  # later but for now I prefer them to be in one place
 
 #helper functions
 def get_uri_from_path(path):
@@ -101,11 +102,16 @@ class RopePlugin(gedit.Plugin):
         self.rope_action_group = gtk.ActionGroup('RopeActions')
         rope_actions = [
             ('Rope', None, 'Rope'),
+            
             ('Project', None, _(u'Project')),
-            ('SetProject', None, _(u'Set Project Root Folder...'), None, None,
-                self.project_helper.set_project),
-            ('ConfigProject', None, _(u'Configure Project'), None, None,
-                self.project_helper.config_project)]
+            
+            ('SetProject', None, _(u'Set Project Root Folder...'), 
+                '<Control>F5', None, self.project_helper.set_project),
+
+            ('ConfigProject', None, _(u'Configure Project'), None, 
+                None, self.project_helper.config_project),
+            ]
+
         self.rope_action_group.add_actions(rope_actions)
         manager.insert_action_group(self.rope_action_group, -1)
         self.rope_ui_id = manager.add_ui_from_string(rope_ui)
