@@ -1,5 +1,4 @@
 #-*- coding:utf-8 -*-
-
 import gedit
 import gtk
 import rope.base.project
@@ -11,28 +10,25 @@ LOCALES_DIR = os.path.join(os.path.dirname(__file__), '.locales')
 gettext.install('ropeplugin', LOCALES_DIR, unicode=True)
 
 #ui strings
-file_ui = '''<ui>
-    <menubar name="MenuBar">
-        <menu name="FileMenu" action="File">
-            <placeholder name="FileOps_2">
-                <menu action="FileRope">
+rope_ui ='''   <menubar name="MenuBar">
+        <menu name="RopeMenu" action="Rope">
+            <placeholder name="RopeOps_1">
+                <menu name="ProjectMenu" action="Project">
                     <menuitem action="SetProject" />
                     <menuitem action="ConfigProject" />
                 </menu>
             </placeholder>
         </menu>
-    </menubar>
-</ui>'''
-
+    </menubar>'''
 
 #helper functions
 def get_uri_from_path(path):
-    '''Converts path string to uri string.'''
+    'Converts path string to uri string.'
     return 'file://' + path
 
 
 class RopeProjectHelper(object):
-    '''A helper class providing rope project management routines.'''
+    'A helper class providing rope project management routines.'
     def __init__(self, window):
         self.project = None
         self.window = window
@@ -46,16 +42,15 @@ class RopeProjectHelper(object):
                     line_pos=0, create=False, jump_to=False)
 
     def set_project(self, action):
-        '''Sets up rope project root folder and creates a rope project.'''
+        'Sets up rope project root folder and creates a rope project.'
         dlg = gtk.FileChooserDialog(
             title=_(u'Set Project Root Folder...'),
             action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
             buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                     gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-        # if there is an active document, dialog will open its folder
-        try:
+                     gtk.STOCK_OPEN, gtk.RESPONSE_OK))        
+        try: # if there is an active document, dialog will open its folder
             uri = self.window.get_active_document().get_uri()
-            if uri: #maybe need to initiate save file dialog if uri == None ?
+            if uri: # maybe need to initiate save file dialog if uri == None ?
                 dlg.set_uri(uri)
         except AttributeError:
             pass
@@ -83,7 +78,7 @@ class RopeProjectHelper(object):
 
 
 class RopePlugin(gedit.Plugin):
-    '''Main plugin class providing integration with Gedit UI'''
+    'Main plugin class providing integration with Gedit UI'
     def __init__(self):
         gedit.Plugin.__init__(self)
 
@@ -95,28 +90,29 @@ class RopePlugin(gedit.Plugin):
     def deactivate(self, window):
         self.remove_menu()
         self.window = None
-        self.file_action_group = None
+        self.rope_action_group = None
         self.project_helper = None
 
     def update_ui(self, window):
-        pass
-
+        pass   
+      
     def insert_menu(self):
         manager = self.window.get_ui_manager()
-        self.file_action_group = gtk.ActionGroup('RopeFileActions')
-        file_actions = [
-            ('FileRope', None, 'Rope'),
+        self.rope_action_group = gtk.ActionGroup('RopeActions')
+        rope_actions = [
+            ('Rope', None, 'Rope'),
+            ('Project', None, _(u'Project')),
             ('SetProject', None, _(u'Set Project Root Folder...'), None, None,
                 self.project_helper.set_project),
             ('ConfigProject', None, _(u'Configure Project'), None, None,
                 self.project_helper.config_project)]
-        self.file_action_group.add_actions(file_actions)
-        manager.insert_action_group(self.file_action_group, -1)
-        self.file_ui_id = manager.add_ui_from_string(file_ui)
+        self.rope_action_group.add_actions(rope_actions)
+        manager.insert_action_group(self.rope_action_group, -1)
+        self.rope_ui_id = manager.add_ui_from_string(rope_ui)
 
     def remove_menu(self):
         manager = self.window.get_ui_manager()
-        manager.remove_ui(self.file_ui_id)
-        manager.remove_action_group(self.file_action_group)
+        manager.remove_ui(self.rope_ui_id)
+        manager.remove_action_group(self.rope_action_group)
         manager.ensure_update()
 
