@@ -15,11 +15,12 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ropeplugin.py:46 ropeplugin.py:96
 msgid "Set Project Root Folder..."
 msgstr "Выбрать корневую папку..."
 
-#: ropeplugin.py:98
 msgid "Configure Project"
 msgstr "Настройка проекта"
+
+msgid "Project"
+msgstr "Проект"
 
