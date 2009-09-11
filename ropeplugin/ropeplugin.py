@@ -2,10 +2,12 @@
 import gedit
 import gtk
 import rope.base.project
-from rope.refactoring import Rename
+from rope.base import libutils
+from rope.refactor.extract import ExtractVariable
 import gettext
 import os.path
 import config
+import dialogs
 
 #gettext installation
 LOCALES_DIR = os.path.join(os.path.dirname(__file__), '.locales')
@@ -20,7 +22,7 @@ rope_ui ='''   <menubar name="MenuBar">
                     <menuitem action="RopeConfigProject" />
                 </menu>
                 <menu name="RopeRefactorMenu" action="RopeRefactor">
-                    <menuitem action="RopeRename" />
+                    <menuitem action="RopeExtractVariable" />
                 </menu>
                 <separator />
                 <menuitem action="RopeConfigPlugin" />
@@ -42,9 +44,17 @@ def get_or_create_tab_from_uri(window, uri):
                 encoding=gedit.encoding_get_current(),
                 line_pos=0, create=False, jump_to=False)
 
-def get_highlited_text(buffer):
-    x, y = buffer.get_selection_bounds()
-    return buffer.get_text(x, y)
+def reload_doc(doc):
+    'Reloads document from disk'
+    doc.load(uri=doc.get_uri(),
+             encoding=doc.get_encoding(),
+             line_pos=0, create=False) # it works, but spits out all sorts of
+                                       # failed assertions. there must be a
+                                       # better way
+
+def get_selected_text(buffer):
+    start, end = buffer.get_selection_bounds()
+    return buffer.get_text(start, end)
 
 
 class RopeProjectHelper(object):
@@ -88,12 +98,48 @@ class RopeProjectHelper(object):
 
 class RefactorHelper(object):
     'Helper class providing refactoring routines'
-    def __init__(self, window):
+    def __init__(self, window, project_helper):
         self.window = window
+        self.project_helper = project_helper
         
+    @property
+    def project(self):
+        return self.project_helper.project   
+        
+    def validate_project(self):
+        try:
+            self.project.validate()
+        except:
+            self.project_helper.set_project(action=None)
+            self.project.validate()    
+    
     def rename(self, action):
         'Renames a variable'
-        
+        self.validate_project()
+    
+    def reload_modified_documents(self, changes):
+        'Reloads all opened docs marked as modified in changes'
+
+    def extract_variable(self, action):
+        'Extracts a variable from expression selected in a document'
+        self.validate_project()
+        doc = self.window.get_active_document()
+        start, end = doc.get_selection_bounds()
+        resource = libutils.path_to_resource(self.project,
+                                             doc.get_uri_for_display())   
+        extractor = ExtractVariable(self.project, resource,
+                                    start.get_offset(), end.get_offset())
+        txt = dialogs.get_python_identifier()
+        if txt:
+            changes = extractor.get_changes(txt)
+            self.apply_changes(changes)
+    
+    def apply_changes(self, changes):
+        print changes.get_description() # TODO: actual preview/apply dialog
+        self.project.do(changes)
+        # maybe reloading everything isn't such a good idea...
+        for doc in self.window.get_documents():
+            reload_doc(doc)
         
 
 class RopePlugin(gedit.Plugin):
@@ -104,7 +150,9 @@ class RopePlugin(gedit.Plugin):
     def activate(self, window):
         self.window = window
         self.project_helper = RopeProjectHelper(self.window)
-        self.insert_menu()    
+        self.refactor_helper = RefactorHelper(self.window,
+                                              self.project_helper)
+        self.insert_menu()
 
     def deactivate(self, window):
         self.remove_menu()
@@ -113,7 +161,9 @@ class RopePlugin(gedit.Plugin):
         self.project_helper = None
 
     def update_ui(self, window):
-        pass
+        manager = window.get_ui_manager()
+        manager.ensure_update()
+        
         
     def config_plugin(self, action):
         config_path = os.path.join(os.path.dirname(__file__), 'config.py')
@@ -134,9 +184,9 @@ class RopePlugin(gedit.Plugin):
                 self.project_helper.config_project),    
             
             ('RopeRefactor', None, _(u'Refactoring')),
-            ('RopeRename', None, _(u'Rename'),
-                config.RENAME_SHORTCUT, None,
-                lambda action: 'Not implemented yet!'),
+            ('RopeExtractVariable', None, _(u'ExtractVariable'),
+                config.EXTRACT_VARIABLE_SHORTCUT, None,
+                self.refactor_helper.extract_variable),
             
             ('RopeConfigPlugin', None, _(u'Configure Plugin'),
                 config.CONFIG_PLUGIN_SHORTCUT, None,
