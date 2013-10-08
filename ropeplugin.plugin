@@ -1,7 +1,7 @@
-[Gedit Plugin]
+[Plugin]
 Loader=python
 Module=ropeplugin
-IAge=2
+IAge=3
 Name=Rope Plugin
 Description=Gedit plugin for integration with rope library.
 Authors=nbchtu <nbchtu@gmail.com>
